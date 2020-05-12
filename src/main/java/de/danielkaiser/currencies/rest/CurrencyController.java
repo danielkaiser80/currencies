@@ -41,7 +41,7 @@ public class CurrencyController {
     @GetMapping("/{SYMBOL}")
     public ResponseEntity<CurrencyDto> getOneCurrency(@NonNull @PathVariable final String SYMBOL) {
         if (SYMBOL.length() != 3) {
-            log.info("An IOS code must have three letters {}", SYMBOL);
+            log.info("An ISO code must have three letters {}", SYMBOL);
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         log.info("REST request to get currency value for {}", SYMBOL);
