@@ -11,11 +11,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.lang.NonNull;
 
-public final class Unzipper {
+public final class UnzipUtil {
 
     private static final Logger log = LogManager.getLogger();
 
-    private Unzipper() {
+    private UnzipUtil() {
     }
 
     public static void unzipFile(String fileName) {

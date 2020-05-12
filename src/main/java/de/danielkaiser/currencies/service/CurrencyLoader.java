@@ -9,9 +9,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -33,7 +33,7 @@ public class CurrencyLoader {
 
     private final Logger log = LogManager.getLogger();
 
-    private Map<String, Double> currencies = new HashMap<>();
+    private List<CurrencyDto> currencies = Collections.emptyList();
 
     private LocalDate retrievalDate = LocalDate.now();
 
@@ -44,7 +44,16 @@ public class CurrencyLoader {
             loadCurrenciesFromEcb();
         }
 
-        return currencies.entrySet().stream().map(entry -> CurrencyDto.from(entry.getKey(), entry.getValue())).collect(Collectors.toList());
+        return currencies;
+    }
+
+    @NonNull
+    public Optional<CurrencyDto> getCurrency(@NonNull final String isoCode) {
+        if (currenciesNeedToBeUpdated()) {
+            log.info("New currencies needed, retrieving...");
+            loadCurrenciesFromEcb();
+        }
+        return currencies.stream().filter(currencyDto -> currencyDto.getIsoCode().equalsIgnoreCase(isoCode)).findFirst();
     }
 
     private boolean currenciesNeedToBeUpdated() {
@@ -57,7 +66,7 @@ public class CurrencyLoader {
                         FileOutputStream fileOutputStream = new FileOutputStream(ZIP_FILE_NAME)) {
 
             fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
-            Unzipper.unzipFile(ZIP_FILE_NAME);
+            UnzipUtil.unzipFile(ZIP_FILE_NAME);
             buildMapFromFile();
 
         } catch (IOException e) {
@@ -74,10 +83,9 @@ public class CurrencyLoader {
             final List<String> isoCodes = currencyValues.get(0);
 
             // first is date and last one is empty
-            currencies = IntStream.range(1, isoCodes.size() - 1).boxed().collect(Collectors.toMap(isoCodes::get, index -> {
-                final String s = currencyValues.get(1).get(index);
-                return Double.parseDouble(s);
-            }));
+            currencies = IntStream.range(1, isoCodes.size() - 1).boxed()
+                            .map(integer -> CurrencyDto.from(isoCodes.get(integer).trim(), getCurrencyValueForIndex(currencyValues, integer)))
+                            .collect(Collectors.toList());
 
             retrievalDate = LocalDate.now();
 
@@ -85,5 +93,11 @@ public class CurrencyLoader {
             log.error(String.format("Could not read CSV file from %s", CSV_FILE_NAME), e);
         }
 
+    }
+
+    @NonNull
+    private Double getCurrencyValueForIndex(@NonNull List<List<String>> currencyValues, int index) {
+        final String s = currencyValues.get(1).get(index);
+        return Double.parseDouble(s);
     }
 }

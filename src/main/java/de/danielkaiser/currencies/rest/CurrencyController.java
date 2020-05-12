@@ -6,7 +6,10 @@ import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,11 +29,14 @@ public class CurrencyController {
     }
 
     @GetMapping
-    public List<CurrencyDto> getAllInsuranceConnections() {
+    public List<CurrencyDto> getAllCurrencies() {
         log.info("REST request to get all currencies");
         return currencyLoader.getAllCurrencies();
     }
 
-    // TODO GET currencies/SYMBOL
-    // param validation
+    @GetMapping("/{SYMBOL}")
+    public ResponseEntity<CurrencyDto> getOneCurrency(@NonNull @PathVariable final String SYMBOL) {
+        log.info("REST request to get currency value for {}", SYMBOL);
+        return ResponseEntity.of(currencyLoader.getCurrency(SYMBOL));
+    }
 }
