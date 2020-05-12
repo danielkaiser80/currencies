@@ -65,7 +65,7 @@ public class CurrencyLoader {
         return currencies.isEmpty() || retrievalDate.isBefore(LocalDate.now());
     }
 
-    public void loadCurrenciesFromEcb() {
+    private void loadCurrenciesFromEcb() {
 
         try (ReadableByteChannel readableByteChannel = Channels.newChannel(new URL(FILE_URL).openStream());
                         FileOutputStream fileOutputStream = new FileOutputStream(ZIP_FILE_NAME)) {
@@ -75,7 +75,7 @@ public class CurrencyLoader {
 
             final Path path = Paths.get(CSV_FILE_NAME);
             Assert.isTrue(Files.exists(path), () -> "CSV file did not exist in ZIP archive.");
-            buildMapFromFile(path);
+            buildCurrenyListFromFile(path);
 
         } catch (IOException e) {
             log.error(String.format("Could not retrieve ZIP file from %s", FILE_URL), e);
@@ -83,7 +83,7 @@ public class CurrencyLoader {
 
     }
 
-    private void buildMapFromFile(@NonNull final Path path) {
+    private void buildCurrenyListFromFile(@NonNull final Path path) {
 
         try (Stream<String> stream = Files.lines(path)) {
 
