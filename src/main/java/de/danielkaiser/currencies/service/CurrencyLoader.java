@@ -7,6 +7,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.stream.Stream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import de.danielkaiser.currencies.dto.CurrencyDto;
@@ -33,10 +35,20 @@ public class CurrencyLoader {
 
     private Map<String, Double> currencies = new HashMap<>();
 
+    private LocalDate retrievalDate = LocalDate.now();
+
+    @NonNull
     public List<CurrencyDto> getAllCurrencies() {
-        // TODO trigger only when needed
-        loadCurrenciesFromEcb();
+        if (currenciesNeedToBeUpdated()) {
+            log.info("New currencies needed, retrieving...");
+            loadCurrenciesFromEcb();
+        }
+
         return currencies.entrySet().stream().map(entry -> CurrencyDto.from(entry.getKey(), entry.getValue())).collect(Collectors.toList());
+    }
+
+    private boolean currenciesNeedToBeUpdated() {
+        return currencies.isEmpty() || retrievalDate.isBefore(LocalDate.now());
     }
 
     public void loadCurrenciesFromEcb() {
@@ -46,12 +58,12 @@ public class CurrencyLoader {
 
             fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
             Unzipper.unzipFile(ZIP_FILE_NAME);
-
             buildMapFromFile();
 
         } catch (IOException e) {
             log.error(String.format("Could not retrieve ZIP file from %s", FILE_URL), e);
         }
+
     }
 
     private void buildMapFromFile() {
@@ -62,13 +74,16 @@ public class CurrencyLoader {
             final List<String> isoCodes = currencyValues.get(0);
 
             // first is date and last one is empty
-            currencies = IntStream.range(1, isoCodes.size() - 2).boxed().collect(Collectors.toMap(isoCodes::get, index -> {
+            currencies = IntStream.range(1, isoCodes.size() - 1).boxed().collect(Collectors.toMap(isoCodes::get, index -> {
                 final String s = currencyValues.get(1).get(index);
                 return Double.parseDouble(s);
             }));
 
+            retrievalDate = LocalDate.now();
+
         } catch (IOException e) {
             log.error(String.format("Could not read CSV file from %s", CSV_FILE_NAME), e);
         }
+
     }
 }
