@@ -11,6 +11,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.lang.NonNull;
 
+/**
+ * Utility to unzip files.
+ */
 public final class UnzipUtil {
 
     private static final Logger log = LogManager.getLogger();

@@ -6,6 +6,7 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -20,9 +21,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import de.danielkaiser.currencies.dto.CurrencyDto;
 
+/**
+ * Service to load and hold the currency values in memory.
+ */
 @Service
 public class CurrencyLoader {
 
@@ -67,7 +72,10 @@ public class CurrencyLoader {
 
             fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
             UnzipUtil.unzipFile(ZIP_FILE_NAME);
-            buildMapFromFile();
+
+            final Path path = Paths.get(CSV_FILE_NAME);
+            Assert.isTrue(Files.exists(path), () -> "CSV file did not exist in ZIP archive.");
+            buildMapFromFile(path);
 
         } catch (IOException e) {
             log.error(String.format("Could not retrieve ZIP file from %s", FILE_URL), e);
@@ -75,9 +83,9 @@ public class CurrencyLoader {
 
     }
 
-    private void buildMapFromFile() {
+    private void buildMapFromFile(@NonNull final Path path) {
 
-        try (Stream<String> stream = Files.lines(Paths.get(CSV_FILE_NAME))) {
+        try (Stream<String> stream = Files.lines(path)) {
 
             final List<List<String>> currencyValues = stream.map(s -> s.split(",")).map(Arrays::asList).collect(Collectors.toList());
             final List<String> isoCodes = currencyValues.get(0);
