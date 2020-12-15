@@ -1,5 +1,10 @@
 package de.danielkaiser.currencies.service;
 
+import de.danielkaiser.currencies.dto.CurrencyDto;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
@@ -17,18 +22,11 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import de.danielkaiser.currencies.dto.CurrencyDto;
-
 /**
  * Service to load and hold the currency values in memory.
  */
 @Service
+@Log4j2
 public class CurrencyLoader {
 
     private static final String FILE_URL = "https://www.ecb.europa.eu/stats/eurofxref/eurofxref.zip";
@@ -36,13 +34,10 @@ public class CurrencyLoader {
     private static final String ZIP_FILE_NAME = FILE_NAME + ".zip";
     private static final String CSV_FILE_NAME = FILE_NAME + ".csv";
 
-    private final Logger log = LogManager.getLogger();
-
     private List<CurrencyDto> currencies = Collections.emptyList();
 
     private LocalDate retrievalDate = LocalDate.now();
 
-    @NonNull
     public List<CurrencyDto> getAllCurrencies() {
         if (currenciesNeedToBeUpdated()) {
             log.info("New currencies needed, retrieving...");
@@ -52,8 +47,7 @@ public class CurrencyLoader {
         return currencies;
     }
 
-    @NonNull
-    public Optional<CurrencyDto> getCurrency(@NonNull final String isoCode) {
+    public Optional<CurrencyDto> getCurrency(final String isoCode) {
         if (currenciesNeedToBeUpdated()) {
             log.info("New currencies needed, retrieving...");
             loadCurrenciesFromEcb();
@@ -68,7 +62,7 @@ public class CurrencyLoader {
     private void loadCurrenciesFromEcb() {
 
         try (ReadableByteChannel readableByteChannel = Channels.newChannel(new URL(FILE_URL).openStream());
-                        FileOutputStream fileOutputStream = new FileOutputStream(ZIP_FILE_NAME)) {
+             FileOutputStream fileOutputStream = new FileOutputStream(ZIP_FILE_NAME)) {
 
             fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
             UnzipUtil.unzipFile(ZIP_FILE_NAME);
@@ -83,7 +77,7 @@ public class CurrencyLoader {
 
     }
 
-    private void buildCurrenyListFromFile(@NonNull final Path path) {
+    private void buildCurrenyListFromFile(final Path path) {
 
         try (Stream<String> stream = Files.lines(path)) {
 
@@ -92,8 +86,8 @@ public class CurrencyLoader {
 
             // first is date and last one is empty
             currencies = IntStream.range(1, isoCodes.size() - 1).boxed()
-                            .map(integer -> CurrencyDto.from(isoCodes.get(integer).trim(), getCurrencyValueForIndex(currencyValues, integer)))
-                            .collect(Collectors.toList());
+                    .map(integer -> CurrencyDto.from(isoCodes.get(integer).trim(), getCurrencyValueForIndex(currencyValues, integer)))
+                    .collect(Collectors.toList());
 
             retrievalDate = LocalDate.now();
 
@@ -103,8 +97,7 @@ public class CurrencyLoader {
 
     }
 
-    @NonNull
-    private Double getCurrencyValueForIndex(@NonNull List<List<String>> currencyValues, int index) {
+    private Double getCurrencyValueForIndex(List<List<String>> currencyValues, int index) {
         final String s = currencyValues.get(1).get(index);
         return Double.parseDouble(s);
     }

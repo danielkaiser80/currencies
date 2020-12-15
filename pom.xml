@@ -5,8 +5,8 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.2.7.RELEASE</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <version>2.4.0</version>
+        <relativePath/>
     </parent>
     <groupId>de.danielkaiser</groupId>
     <artifactId>currencies</artifactId>
@@ -15,7 +15,7 @@
     <description>EZB currencies wrapper</description>
 
     <properties>
-        <java.version>11</java.version>
+        <java.version>15</java.version>
     </properties>
 
     <dependencies>

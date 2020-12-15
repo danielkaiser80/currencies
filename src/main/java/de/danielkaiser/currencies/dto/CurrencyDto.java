@@ -1,21 +1,14 @@
 package de.danielkaiser.currencies.dto;
 
-import org.springframework.lang.NonNull;
-
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.Value;
 
 /**
  * A simple DTO, comprising of an ISO code and a currency value.
  */
-@Getter
-@RequiredArgsConstructor(staticName = "from")
+@Value(staticConstructor = "from")
 public class CurrencyDto {
 
-    @NonNull
-    private final String isoCode;
-
-    @NonNull
-    private final Double value;
+    String isoCode;
+    Double value;
 
 }
