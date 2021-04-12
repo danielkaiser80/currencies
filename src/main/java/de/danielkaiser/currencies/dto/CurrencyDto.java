@@ -9,6 +9,7 @@ import lombok.Value;
 public class CurrencyDto {
 
     String isoCode;
+
     Double value;
 
 }
