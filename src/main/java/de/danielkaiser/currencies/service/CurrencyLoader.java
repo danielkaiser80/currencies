@@ -53,7 +53,7 @@ public class CurrencyLoader {
             log.info("New currencies needed, retrieving...");
             loadCurrenciesFromEcb();
         }
-        return currencies.stream().filter(currencyDto -> currencyDto.isoCode().equalsIgnoreCase(isoCode)).findFirst();
+        return currencies.stream().filter(currencyDto -> isoCode.equalsIgnoreCase(currencyDto.isoCode())).findFirst();
     }
 
     private boolean currenciesNeedToBeUpdated() {
@@ -63,7 +63,7 @@ public class CurrencyLoader {
     private void loadCurrenciesFromEcb() {
 
         try (ReadableByteChannel readableByteChannel = Channels.newChannel(new URL(FILE_URL).openStream());
-                        FileOutputStream fileOutputStream = new FileOutputStream(ZIP_FILE_NAME)) {
+             final FileOutputStream fileOutputStream = new FileOutputStream(ZIP_FILE_NAME)) {
 
             fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
             UnzipUtil.unzipFile(ZIP_FILE_NAME);
@@ -87,8 +87,8 @@ public class CurrencyLoader {
 
             // first is date and last one is empty
             currencies = IntStream.range(1, isoCodes.size() - 1).boxed()
-                            .map(integer -> new CurrencyDto(isoCodes.get(integer).trim(), getCurrencyValueForIndex(currencyValues, integer)))
-                            .collect(Collectors.toList());
+                    .map(integer -> new CurrencyDto(isoCodes.get(integer).trim(), getCurrencyValueForIndex(currencyValues, integer)))
+                    .collect(Collectors.toList());
 
             retrievalDate = LocalDate.now();
 
