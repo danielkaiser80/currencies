@@ -53,7 +53,7 @@ public class CurrencyLoader {
             log.info("New currencies needed, retrieving...");
             loadCurrenciesFromEcb();
         }
-        return currencies.stream().filter(currencyDto -> currencyDto.getIsoCode().equalsIgnoreCase(isoCode)).findFirst();
+        return currencies.stream().filter(currencyDto -> currencyDto.isoCode().equalsIgnoreCase(isoCode)).findFirst();
     }
 
     private boolean currenciesNeedToBeUpdated() {
@@ -87,13 +87,13 @@ public class CurrencyLoader {
 
             // first is date and last one is empty
             currencies = IntStream.range(1, isoCodes.size() - 1).boxed()
-                            .map(integer -> CurrencyDto.from(isoCodes.get(integer).trim(), getCurrencyValueForIndex(currencyValues, integer)))
+                            .map(integer -> new CurrencyDto(isoCodes.get(integer).trim(), getCurrencyValueForIndex(currencyValues, integer)))
                             .collect(Collectors.toList());
 
             retrievalDate = LocalDate.now();
 
         } catch (IOException e) {
-            log.error(String.format("Could not read CSV file from %s", CSV_FILE_NAME), e);
+            log.error("Could not read CSV file from {}", CSV_FILE_NAME, e);
         }
 
     }
