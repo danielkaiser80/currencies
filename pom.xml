@@ -5,17 +5,17 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.5.2</version>
+        <version>3.0.1</version>
         <relativePath/>
     </parent>
     <groupId>de.danielkaiser</groupId>
     <artifactId>currencies</artifactId>
-    <version>0.0.2-SNAPSHOT</version>
+    <version>0.0.3-SNAPSHOT</version>
     <name>currencies</name>
     <description>EZB currencies wrapper</description>
 
     <properties>
-        <java.version>16</java.version>
+        <java.version>17</java.version>
     </properties>
 
     <dependencies>
