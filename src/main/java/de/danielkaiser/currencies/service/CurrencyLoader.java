@@ -1,8 +1,13 @@
 package de.danielkaiser.currencies.service;
 
+import de.danielkaiser.currencies.dto.CurrencyDto;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
@@ -13,15 +18,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import de.danielkaiser.currencies.dto.CurrencyDto;
-import lombok.extern.log4j.Log4j2;
 
 /**
  * Service to load and hold the currency values in memory.
@@ -62,7 +60,7 @@ public class CurrencyLoader {
 
     private void loadCurrenciesFromEcb() {
 
-        try (ReadableByteChannel readableByteChannel = Channels.newChannel(new URL(FILE_URL).openStream());
+        try (ReadableByteChannel readableByteChannel = Channels.newChannel(URI.create(FILE_URL).toURL().openStream());
              final FileOutputStream fileOutputStream = new FileOutputStream(ZIP_FILE_NAME)) {
 
             fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
@@ -82,13 +80,16 @@ public class CurrencyLoader {
 
         try (Stream<String> stream = Files.lines(path)) {
 
-            final List<List<String>> currencyValues = stream.map(s -> s.split(",")).map(Arrays::asList).collect(Collectors.toList());
+            final List<List<String>> currencyValues = stream
+                    .map(s -> s.split(","))
+                    .map(Arrays::asList)
+                    .toList();
             final List<String> isoCodes = currencyValues.get(0);
 
             // first is date and last one is empty
             currencies = IntStream.range(1, isoCodes.size() - 1).boxed()
                     .map(integer -> new CurrencyDto(isoCodes.get(integer).trim(), getCurrencyValueForIndex(currencyValues, integer)))
-                    .collect(Collectors.toList());
+                    .toList();
 
             retrievalDate = LocalDate.now();
 
