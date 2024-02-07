@@ -84,7 +84,7 @@ public class CurrencyLoader {
                     .map(s -> s.split(","))
                     .map(Arrays::asList)
                     .toList();
-            final List<String> isoCodes = currencyValues.get(0);
+            final List<String> isoCodes = currencyValues.getFirst();
 
             // first is date and last one is empty
             currencies = IntStream.range(1, isoCodes.size() - 1).boxed()
